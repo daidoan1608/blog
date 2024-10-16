@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cập nhật thông tin người dùng</title>
+</head>
+<body>
+<h1>Cập nhật thông tin người dùng</h1>
+
+<form th:action="@{/admin/users/update/{id}(id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
+    <div>
+        <img th:src="${user.avatar}" width="200" height="200" />
+    <div>
+        <label for="avatar">Đổi:</label>
+        <input type="file" id="avatar" name="avatar"/>
+    </div>
+    <div>
+        <label for="username">Tên đăng nhập:</label>
+        <input type="text" id="username" th:field="*{username}" required readonly />
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" th:field="*{email}" required readonly />
+    </div>
+    <div>
+        <label for="fullname">Họ tên:</label>
+        <input type="text" id="fullname" th:field="*{fullname}" required />
+    </div>
+    <div>
+        <label for="phone">Điện thoại:</label>
+        <input type="text" id="phone" th:field="*{phone}" required />
+    </div>
+    <div>
+        <label for="role">Vai trò:</label>
+        <select id="role" th:field="*{role}">
+            <option value="USER" th:selected="${user.role == 'USER'}">User</option>
+            <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">Admin</option>
+        </select>
+    </div>
+    <div>
+        <input type="submit" value="Cập nhật"/>
+    </div>
+</form>
+<a href="/admin/users">Trở về danh sách</a>
+</body>
+</html>
