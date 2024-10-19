@@ -1,15 +1,16 @@
 package com.example.blog.service;
 
-import com.example.blog.model.User;
+import com.example.blog.dto.UserDto;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    User findByUsernameAndPassword(String username,String password);
-    List<User> getAll();
-    User create(User user);
-    User update(UUID id, User user);
+    UserDto findByUsernameAndPassword(String username,String password);
+    List<UserDto> getAll();
+    UserDto create(UserDto userDto);
+    void update(UUID id, UserDto user);
     void deleteById(UUID id);
+    UserDto findById(UUID id);
 
 }

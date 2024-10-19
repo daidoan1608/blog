@@ -5,16 +5,10 @@
     <title>Trang blog</title>
 </head>
 <body>
-<h1>Danh sách bài viết</h1>
+<h1>Trang chủ</h1>
 
-<div>
-    <ul>
-        <!-- Duyệt qua danh sách bài viết và hiển thị -->
-        <li th:each="post : ${posts}">
-            <h2 th:text="${post.title}"></h2>
-            <p th:text="${post.content}"></p>
-        </li>
-    </ul>
-</div>
+<p>Chào mừng bạn đến với trang blog của chúng tôi!</p>
+
+<p th:text="${message}"></p>
 </body>
 </html>

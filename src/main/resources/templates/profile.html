@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thông tin cá nhân</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="container">
+    <h1>Thông tin cá nhân</h1>
+
+    <!-- Hiển thị avatar nếu có -->
+    <div>
+        <img th:src="${user.avatar}" alt="Avatar" width="150" height="150">
+    </div>
+
+    <p><strong>Tên đăng nhập:</strong> <span th:text="${user.username}"></span></p>
+    <p><strong>Họ và tên:</strong> <span th:text="${user.fullname}"></span></p>
+    <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+    <p><strong>Số điện thoại:</strong> <span th:text="${user.phone}"></span></p>
+    <p><strong>Vai trò:</strong> <span th:text="${user.role}"></span></p>
+
+    <!-- Đặt thêm các nút hoặc liên kết nếu cần -->
+    <div>
+        <a th:href="@{/admin/users/update/{id}(id=${user.id})}" class="btn">Chỉnh sửa thông tin</a>
+    </div>
+</div>
+</body>
+</html>

@@ -9,10 +9,11 @@
 
 <form th:action="@{/admin/users/update/{id}(id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
     <div>
-        <img th:src="${user.avatar}" width="200" height="200" />
+        <img id="avatarPreview" th:src="${user.avatar}" width="200" height="200" alt="Avatar Preview"/>
+    </div>
     <div>
         <label for="avatar">Đổi:</label>
-        <input type="file" id="avatar" name="avatar"/>
+        <input type="file" id="avatar" name="avatar" onchange="previewAvatar(event)"/>
     </div>
     <div>
         <label for="username">Tên đăng nhập:</label>
@@ -42,5 +43,16 @@
     </div>
 </form>
 <a href="/admin/users">Trở về danh sách</a>
+
+<script>
+    function previewAvatar(event) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const avatarPreview = document.getElementById('avatarPreview');
+            avatarPreview.src = reader.result;
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
 </body>
 </html>

@@ -1,13 +1,16 @@
 package com.example.blog.controller;
 
+import com.example.blog.dto.UserDto;
 import com.example.blog.model.User;
 import com.example.blog.service.Impl.UserServiceImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.validation.BindingResult;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,70 +31,85 @@ public class AdminController {
 
     @GetMapping("/users")
     public String listUsers(Model model) {
-        List<User> users = userServiceImpl.getAll();
+        List<UserDto> users = userServiceImpl.getAll();
         model.addAttribute("users", users);
         return "admin";  // Trả về tên của file HTML
     }
 
     @GetMapping("/users/new")
-    public String createUser() {
-        return "crearte-form";
+    public String showCreateForm(Model model) {
+        UserDto userDto = new UserDto();// Khởi tạo một UserDto mới
+        MultipartFile avatar = null;
+        model.addAttribute("userDto", userDto); // Thêm vào mô hình
+        return "create-form"; // Tên template cho biểu mẫu
     }
+
 
     @PostMapping("/users/new")
-    public String create(@RequestParam("username") String username,
-                       @RequestParam("email") String email,
-                       @RequestParam("fullname") String fullname,
-                       @RequestParam("phone") String phone,
-                       @RequestParam("role") String role,
-                       @RequestParam("avatar") MultipartFile avatar) throws IOException {
+    public String create(@Valid @ModelAttribute UserDto userDto,
+                         BindingResult bindingResult,
+                         @RequestParam("img") MultipartFile img) throws IOException {
+        // Kiểm tra lỗi trước khi thực hiện bất kỳ thao tác nào
+        if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().forEach(error -> {
+                System.out.println(error.getDefaultMessage());
+            });
+            return "create-form"; // Trở lại form nếu có lỗi
+        }
 
-        User user = new User();
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setFullname(fullname);
-        user.setPhone(phone);
-        user.setRole(User.Role.valueOf(role));
-        user.setPassword("123456");
-        user.setAvatar(uploadAvatar(avatar, username));
-        userServiceImpl.create(user);
+        // Lưu tệp avatar và lấy đường dẫn
+        String avatarPath = uploadAvatar(img, userDto.getUsername());
+        userDto.setAvatar(avatarPath); // Cập nhật đường dẫn vào UserDto
+
+        // Lưu người dùng
+        userServiceImpl.create(userDto);
+
         return "redirect:/admin/users";
     }
-
     @GetMapping("/users/update/{id}")
     public String showFormUpdate(@PathVariable UUID id, Model model) {
-        User user = userServiceImpl.findById(id);
-        model.addAttribute("user", user);
+        UserDto userDto = userServiceImpl.findById(id);
+        model.addAttribute("user", userDto);
         return "update-form";
     }
 
     @PostMapping("/users/update/{id}")
-    public String updateUser(@PathVariable("id") UUID id,
-                             @RequestParam("username") String username,
-                             @RequestParam("email") String email,
-                             @RequestParam("fullname") String fullname,
-                             @RequestParam("phone") String phone,
-                             @RequestParam("role") String role,
-                             @RequestParam("avatar") MultipartFile avatar) throws IOException {
+    public String updateUser(@PathVariable UUID id,
+                             @Valid @ModelAttribute UserDto userDto,
+                             BindingResult bindingResult,
+                             @RequestParam(value = "img", required = false) MultipartFile img) throws IOException {
         // Lấy người dùng từ cơ sở dữ liệu theo ID
-        User user = userServiceImpl.findById(id);
+        UserDto existingUserDto = userServiceImpl.findById(id);
 
-        if (user == null) {
-            return "redirect:/admin/users?error=UserNotFound";
+        // Kiểm tra lỗi trước khi thực hiện bất kỳ thao tác nào
+        if (bindingResult.hasErrors()) {
+            return "update-form"; // Trở lại form nếu có lỗi
+        }
+
+        String oldAvatarPath = existingUserDto.getAvatar();
+
+        // Kiểm tra nếu có file mới được upload
+        if (img != null && !img.isEmpty()) {
+            // Xóa tệp avatar cũ
+            deleteFile(oldAvatarPath);
+
+            // Cập nhật avatar mới
+            String newAvatarPath = uploadAvatar(img, userDto.getUsername());
+            userDto.setAvatar(newAvatarPath); // Cập nhật đường dẫn avatar mới
+        } else {
+            // Nếu không có tệp mới, giữ nguyên đường dẫn cũ
+            userDto.setAvatar(oldAvatarPath);
         }
 
         // Cập nhật thông tin từ form
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setFullname(fullname);
-        user.setPhone(phone);
-        user.setRole(User.Role.valueOf(role));
-
-        // Kiểm tra nếu avatar được upload
-        user.setAvatar(uploadAvatar(avatar, username));
+        existingUserDto.setEmail(userDto.getEmail());
+        existingUserDto.setUsername(userDto.getUsername());
+        existingUserDto.setFullname(userDto.getFullname());
+        existingUserDto.setPhone(userDto.getPhone());
+        existingUserDto.setRole(userDto.getRole());
 
         // Cập nhật thông tin người dùng trong database
-        userServiceImpl.update(id, user);
+        userServiceImpl.update(id, existingUserDto);
 
         return "redirect:/admin/users";
     }
@@ -99,61 +117,49 @@ public class AdminController {
 
     @PostMapping("/users/delete/{id}")
     public String deleteUser(@PathVariable UUID id) throws IOException {
-        User user = userServiceImpl.findById(id);
-        String avatarPath = user.getAvatar();
+        UserDto userDto = userServiceImpl.findById(id);
+        String avatarPath = userDto.getAvatar();
 
         // Kiểm tra nếu avatarPath không rỗng và xóa thư mục chứa ảnh
         if (avatarPath != null && !avatarPath.isEmpty()) {
             // Chuyển avatarPath thành đường dẫn thực trên hệ thống file
-            Path folderPath = Paths.get("src", "main", "resources", "static").resolve(avatarPath).getParent();
-
-            // In ra đường dẫn để kiểm tra xem nó có đúng không
-            System.out.println("Đường dẫn folder: " + folderPath.toAbsolutePath());
-
-            // Kiểm tra xem thư mục có tồn tại không và xóa nó
-            if (Files.exists(folderPath)) {
-                System.out.println("Thư mục tồn tại, bắt đầu xóa...");
-                // Xóa toàn bộ thư mục và các file bên trong
-                Files.walk(folderPath)
-                        .sorted(Comparator.reverseOrder()) // Đảm bảo xóa file trước khi xóa thư mục
-                        .forEach(filePath -> {
-                            try {
-                                System.out.println("Đang xóa: " + filePath);
-                                Files.delete(filePath);
-                            } catch (IOException e) {
-                                e.printStackTrace(); // Log lỗi nếu không xóa được
-                            }
-                        });
-            } else {
-                System.out.println("Thư mục không tồn tại!");
-            }
+            Path folderPath = Paths.get(System.getProperty("user.dir"), "uploads", avatarPath).getParent();
+            deleteFile(avatarPath);
         }
-
-        // Xóa người dùng khỏi cơ sở dữ liệu
         userServiceImpl.deleteById(id);
-
         return "redirect:/admin/users";
     }
 
     public String uploadAvatar(MultipartFile avatar, String username) throws IOException {
         // Đường dẫn đến thư mục img trong resources/static
-        Path staticPath = Paths.get("src", "main", "resources", "static", "img", "avatars", username);
-
+        Path staticPath = Paths.get("uploads", "avatars", username);
         // Kiểm tra xem thư mục đã tồn tại chưa, nếu chưa thì tạo mới
         if (!Files.exists(staticPath)) {
             Files.createDirectories(staticPath);
         }
-
         // Tạo đường dẫn cho tệp ảnh
         Path file = staticPath.resolve(avatar.getOriginalFilename().replaceAll(" ", "_"));
-
         // Lưu tệp ảnh vào thư mục
         try (OutputStream os = Files.newOutputStream(file)) {
             os.write(avatar.getBytes());
         }
-
         // Trả về đường dẫn tương đối để lưu vào database
-        return "/img/avatars/" + username + "/" + avatar.getOriginalFilename();
+        return "/avatars/" + username + "/" + avatar.getOriginalFilename().replaceAll(" ", "_");
     }
 
+    public void deleteFile(String path) throws IOException {
+        Path folderPath = Paths.get(System.getProperty("user.dir"), "uploads", path).getParent();
+        if (Files.exists(folderPath)) {
+            Files.walk(folderPath).sorted(Comparator.reverseOrder())
+                    .forEach(filePath -> {
+                        try {
+                            System.out.println("Đang xóa: " + filePath);
+                            Files.delete(filePath);
+                        } catch (IOException e) {
+                            log.info("Không thể xóa file: " + filePath);
+                            e.printStackTrace();
+                        }
+                    });
+        }
+    }
 }

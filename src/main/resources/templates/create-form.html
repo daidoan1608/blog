@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm Người Dùng</title>
+</head>
+<body>
+<h1>Thêm Người Dùng</h1>
+
+<form th:action="@{/admin/users/new}" method="post" enctype="multipart/form-data" th:object="${userDto}">
+    <div>
+        <img id="avatarPreview" src="#" alt="Avatar Preview" width="200" height="200" style="display:none;" />
+    </div>
+    <div>
+        <label for="avatar">Avatar:</label>
+        <input type="file" name="img" id="avatar" onchange="previewAvatar(event)" />
+    </div>
+    <div>
+        <label for="username">Tên đăng nhập:</label>
+        <input type="text" id="username" name="username" th:field="*{username}" required />
+        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Tên đăng nhập không hợp lệ</span>
+    </div>
+
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" th:field="*{email}" required />
+        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email không hợp lệ</span>
+    </div>
+
+    <div>
+        <label for="fullname">Họ tên:</label>
+        <input type="text" id="fullname" name="fullname" th:field="*{fullname}" required />
+        <span th:if="${#fields.hasErrors('fullname')}" th:errors="*{fullname}">Họ tên không hợp lệ</span>
+    </div>
+
+    <div>
+        <label for="phone">Điện thoại:</label>
+        <input type="text" id="phone" name="phone" th:field="*{phone}" required />
+        <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Số điện thoại không hợp lệ</span>
+    </div>
+
+    <div>
+        <label for="password">Mật khẩu:</label>
+        <input type="password" id="password" name="password" th:field="*{password}" required />
+        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Mật khẩu không hợp lệ</span>
+    </div>
+
+    <div>
+        <label for="role">Vai trò:</label>
+        <select id="role" name="role" th:field="*{role}">
+            <option value="USER">User</option>
+            <option value="ADMIN">Admin</option>
+        </select>
+    </div>
+    <div>
+        <input type="submit" value="Lưu" />
+    </div>
+</form>
+<a th:href="@{/admin/users}">Trở về danh sách</a>
+<!-- JavaScript để hiển thị ảnh xem trước -->
+<script>
+    function previewAvatar(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const avatarPreview = document.getElementById('avatarPreview');
+            avatarPreview.src = reader.result;
+            avatarPreview.style.display = "block"; // Hiển thị ảnh sau khi chọn
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+</body>
+</html>
