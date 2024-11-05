@@ -6,7 +6,10 @@ import com.example.blog.repository.UserRepository;
 import com.example.blog.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.stream.Collectors;
 
@@ -16,15 +19,26 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private UserRepository userRepository;
-    private ModelMapper modelMapper;
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Override
     public UserDto findByUsernameAndPassword(String username, String password) {
-        User user = userRepository.findByUsernameAndPassword(username, password);
-        return user != null ? modelMapper.map(user, UserDto.class) : null;
+        User user = userRepository.findByUsername(username);
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+            return modelMapper.map(user, UserDto.class);
+        }
+        return null;
+    }
+
+    @Override
+    public UserDto findByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        return modelMapper.map(user, UserDto.class);
     }
 
     @Override
@@ -37,8 +51,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto create(UserDto userDto) {
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         var user = modelMapper.map(userDto, User.class);
-        var savedUser = userRepository.save(user);
+        userRepository.save(user);
         return userDto;
     }
 
@@ -65,5 +80,13 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return modelMapper.map(user, UserDto.class);
+    }
+
+    @Override
+    public List<UserDto> searchUsersByUsername(String username) {
+        List<User> users = userRepository.findByUsernameContainingIgnoreCase(username);
+        return users.stream()
+                .map(user -> modelMapper.map(user, UserDto.class))
+                .collect(Collectors.toList());
     }
 }

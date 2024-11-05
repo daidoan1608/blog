@@ -3,12 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <title>Trang blog</title>
+    <style>
+        /* Định vị container chứa nút ở góc phải trên cùng */
+        .top-right-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        /* Định dạng các nút */
+        .top-right-buttons button {
+            margin-left: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 <h1>Trang chủ</h1>
 
 <p>Chào mừng bạn đến với trang blog của chúng tôi!</p>
+<!-- Container chứa các nút -->
+<div class="top-right-buttons" th:if="${userId} != null">
+    <!-- Nút Xem Thông Tin Cá Nhân -->
+    <a th:href="@{'/profile/' + ${userId}}">
+        <button>Xem Thông Tin Cá Nhân</button>
+    </a>
 
-<p th:text="${message}"></p>
+    <!-- Nút Đăng Xuất -->
+    <a href="/logout" th:href="@{/logout}">
+        <button>Đăng Xuất</button>
+    </a>
+</div>
+
+<!-- Thông điệp cho người dùng chưa đăng nhập -->
+<div th:if="${userId} == null">
+    <p>Bạn chưa đăng nhập! Vui lòng <a th:href="@{/login}">đăng nhập</a>.</p>
+</div>
+
+<div>
+    <ul>
+        <li th:each="post : ${posts}">
+            <h2 th:text="${post.title}">Tiêu đề</h2>
+            <p><strong>Tác giả:</strong> <span th:text="${post.author.username}"></span></p>
+            <p><strong>Thời gian:</strong> <span th:text="${post.createdAt}"></span></p>
+            <p th:text="${post.content}">Nội dung</p>
+            <hr>
+        </li>
+    </ul>
+</div>
+
 </body>
 </html>

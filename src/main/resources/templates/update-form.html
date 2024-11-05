@@ -7,13 +7,13 @@
 <body>
 <h1>Cập nhật thông tin người dùng</h1>
 
-<form th:action="@{/admin/users/update/{id}(id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
+<form th:action="@{/admin/users/update/{id} (id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
     <div>
         <img id="avatarPreview" th:src="${user.avatar}" width="200" height="200" alt="Avatar Preview"/>
     </div>
     <div>
-        <label for="avatar">Đổi:</label>
-        <input type="file" id="avatar" name="avatar" onchange="previewAvatar(event)"/>
+        <label for="img">Đổi:</label>
+        <input type="file" id="img" name="img" onchange="previewAvatar(event)"/>
     </div>
     <div>
         <label for="username">Tên đăng nhập:</label>

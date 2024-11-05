@@ -24,6 +24,7 @@ import java.util.UUID;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
+@SessionAttributes("user")
 @RequestMapping("/admin")
 public class AdminController {
 
@@ -74,15 +75,17 @@ public class AdminController {
     }
 
     @PostMapping("/users/update/{id}")
-    public String updateUser(@PathVariable UUID id,
-                             @Valid @ModelAttribute UserDto userDto,
+    public String updateUser(@Valid @ModelAttribute UserDto userDto,
                              BindingResult bindingResult,
                              @RequestParam(value = "img", required = false) MultipartFile img) throws IOException {
         // Lấy người dùng từ cơ sở dữ liệu theo ID
-        UserDto existingUserDto = userServiceImpl.findById(id);
-
+        UserDto existingUserDto = userServiceImpl.findById(userDto.getId());
+        userDto.setPassword(existingUserDto.getPassword());
         // Kiểm tra lỗi trước khi thực hiện bất kỳ thao tác nào
         if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().forEach(error -> {
+                System.out.println(error.getDefaultMessage());
+            });
             return "update-form"; // Trở lại form nếu có lỗi
         }
 
@@ -101,15 +104,7 @@ public class AdminController {
             userDto.setAvatar(oldAvatarPath);
         }
 
-        // Cập nhật thông tin từ form
-        existingUserDto.setEmail(userDto.getEmail());
-        existingUserDto.setUsername(userDto.getUsername());
-        existingUserDto.setFullname(userDto.getFullname());
-        existingUserDto.setPhone(userDto.getPhone());
-        existingUserDto.setRole(userDto.getRole());
-
-        // Cập nhật thông tin người dùng trong database
-        userServiceImpl.update(id, existingUserDto);
+        userServiceImpl.update(userDto.getId(), userDto);
 
         return "redirect:/admin/users";
     }

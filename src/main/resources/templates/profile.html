@@ -11,7 +11,8 @@
 
     <!-- Hiển thị avatar nếu có -->
     <div>
-        <img th:src="${user.avatar}" alt="Avatar" width="150" height="150">
+        <img th:if="${path != null}" th:src="${path}" alt="Avatar" width="150" height="150">
+
     </div>
 
     <p><strong>Tên đăng nhập:</strong> <span th:text="${user.username}"></span></p>
