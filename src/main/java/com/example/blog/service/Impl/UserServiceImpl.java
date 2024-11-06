@@ -5,10 +5,8 @@ import com.example.blog.model.User;
 import com.example.blog.repository.UserRepository;
 import com.example.blog.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.stream.Collectors;
@@ -22,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final ModelMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
 
@@ -30,7 +28,7 @@ public class UserServiceImpl implements UserService {
     public UserDto findByUsernameAndPassword(String username, String password) {
         User user = userRepository.findByUsername(username);
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-            return modelMapper.map(user, UserDto.class);
+            return userMapper.map(user, UserDto.class);
         }
         return null;
     }
@@ -38,21 +36,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto findByUsername(String username) {
         User user = userRepository.findByUsername(username);
-        return modelMapper.map(user, UserDto.class);
+        return userMapper.map(user, UserDto.class);
     }
 
     @Override
     public List<UserDto> getAll() {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(user -> modelMapper.map(user, UserDto.class))
+                .map(user -> userMapper.map(user, UserDto.class))
                 .collect(Collectors.toList());
     }
 
     @Override
     public UserDto create(UserDto userDto) {
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        var user = modelMapper.map(userDto, User.class);
+        var user = userMapper.map(userDto, User.class);
         userRepository.save(user);
         return userDto;
     }
@@ -67,7 +65,7 @@ public class UserServiceImpl implements UserService {
         existingUser.setAvatar(userDto.getAvatar());
 
         var updatedUser = userRepository.save(existingUser);
-        modelMapper.map(updatedUser, UserDto.class);
+        userMapper.map(updatedUser, UserDto.class);
     }
 
     @Override
@@ -79,14 +77,14 @@ public class UserServiceImpl implements UserService {
     public UserDto findById(UUID id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return modelMapper.map(user, UserDto.class);
+        return userMapper.map(user, UserDto.class);
     }
 
     @Override
     public List<UserDto> searchUsersByUsername(String username) {
         List<User> users = userRepository.findByUsernameContainingIgnoreCase(username);
         return users.stream()
-                .map(user -> modelMapper.map(user, UserDto.class))
+                .map(user -> userMapper.map(user, UserDto.class))
                 .collect(Collectors.toList());
     }
 }

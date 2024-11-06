@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi Tiết Bài Viết</title>
+    <link rel="stylesheet" th:href="@{https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div class="container mt-5">
+    <!-- Phần hiển thị bài viết -->
+    <div class="post">
+        <h2 th:text="${post.title}">Tiêu đề bài viết</h2>
+        <p><strong>Tác giả:</strong> <span th:text="${post.author.username}">Tên tác giả</span></p>
+        <p><strong>Ngày đăng:</strong> <span th:text="${post.updatedAt}">Thời gian đăng</span></p>
+        <div class="content">
+            <p th:text="${post.content}">Nội dung bài viết</p>
+        </div>
+        <hr>
+    </div>
+    Phần hiển thị các bình luận
+    <div class="comments">
+        <h3>Bình luận</h3>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="comment : ${comments}">
+                <p><strong><span th:text="${comment.user.username}">Tên người dùng</span></strong>
+                    <span th:text="${comment.updatedAt}">Thời gian bình luận</span></p>
+                <p th:text="${comment.body}">Nội dung bình luận</p>
+            </li>
+        </ul>
+    </div>
+    <div th:if="${user != null}">
+        <h4>Thêm bình luận mới</h4>
+        <form th:action="@{/comments/add}" method="post">
+            <input type="hidden" name="postId" th:value="${post.id}"/>
+            <div class="form-group">
+                <textarea class="form-control" name="body" rows="3" placeholder="Nhập bình luận của bạn"
+                          required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Đăng bình luận</button>
+        </form>
+    </div>
+    <div th:if="${user == null}">
+        <p>Vui lòng <a th:href="@{/login}">đăng nhập</a> để bình luận.</p>
+    </div>
+</div>
+</body>
+</html>

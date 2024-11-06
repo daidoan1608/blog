@@ -40,43 +40,6 @@ public class LoginController {
         return "login";
     }
 
-//    @PostMapping("/login")
-//    public String login(@RequestParam("username") String username,
-//                        @RequestParam("password") String password,
-//                        HttpSession session,
-//                        Model model) {
-//        log.warn("Attempting to login user: " + username);
-//        try {
-//            // Tải userDetails từ service
-//            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-//            String role = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst().orElse(null);
-//            log.warn("Role: " + role);
-//
-//            if (passwordEncoder.matches(password, userDetails.getPassword())) {
-//                // Tạo Authentication và lưu vào SecurityContext
-//                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-//                        userDetails, password, userDetails.getAuthorities());
-//                SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//                // Lấy role từ authorities
-//
-//                // Kiểm tra role
-//                if ("ADMIN".equals(role)) {
-//                    session.setAttribute("loggedInUser", userServiceImpl.findByUsername(username));
-//                    return "redirect:/admin/users";
-//                } else {
-//                    session.setAttribute("loggedInUser", userServiceImpl.findByUsername(username));
-//                    return "redirect:/"; // Điều hướng đến trang chủ
-//                }
-//            }
-//        } catch (UsernameNotFoundException e) {
-//            log.error("User not found", e);
-//        }
-//
-//        model.addAttribute("errorMessage", "Invalid username or password");
-//        return "login"; // Quay lại trang login nếu không thành công
-//    }
-
     @GetMapping("/register")
     public String signUp() {
         return "sign-up";
@@ -101,9 +64,9 @@ public class LoginController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             String username = authentication.getName();
-            UserDto userDto = userServiceImpl.findByUsername(username);
-            if (userDto != null) {
-                model.addAttribute("userId", userDto.getId());
+            UserDto user = userServiceImpl.findByUsername(username);
+            if (user != null) {
+                model.addAttribute("user", user);
                 model.addAttribute("message", "Thông tin public");
             } else {
                 model.addAttribute("message", "Người dùng không tồn tại.");

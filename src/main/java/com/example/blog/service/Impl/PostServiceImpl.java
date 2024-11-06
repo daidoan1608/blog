@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final ModelMapper postMapper;
 
     @Override
     public void createPost(PostDto postDto, UUID userId) {
@@ -50,9 +50,9 @@ public class PostServiceImpl implements PostService {
         List<Post> posts = postRepository.findAll();
         return posts.stream()
                 .map(post -> {
-                    PostDto postDto = modelMapper.map(post, PostDto.class);
+                    PostDto postDto = postMapper.map(post, PostDto.class);
                     if (post.getUser() != null) {
-                        UserDto userDto = modelMapper.map(post.getUser(), UserDto.class);
+                        UserDto userDto = postMapper.map(post.getUser(), UserDto.class);
                         postDto.setAuthor(userDto);
                     }
                     return postDto;
@@ -61,8 +61,33 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto getPost(UUID id) {
+    public PostDto findById(UUID id) {
         Post post = postRepository.findById(id).orElseThrow();
-        return modelMapper.map(post, PostDto.class);
+
+        // Ánh xạ post sang PostDto
+        PostDto postDto = postMapper.map(post, PostDto.class);
+
+        // Kiểm tra xem post có user không, nếu có thì ánh xạ user sang UserDto
+        if (post.getUser() != null) {
+            UserDto userDto = postMapper.map(post.getUser(), UserDto.class);
+            postDto.setAuthor(userDto); // Đặt author cho postDto
+        }
+
+        return postDto;
+    }
+
+    @Override
+    public List<PostDto> findAllByUserId(UUID userId) {
+        List<Post> posts = postRepository.findAllByUserId(userId);
+        return posts.stream()
+                .map(post -> {
+                    PostDto postDto = postMapper.map(post, PostDto.class);
+                    if (post.getUser() != null) {
+                        UserDto userDto = postMapper.map(post.getUser(), UserDto.class);
+                        postDto.setAuthor(userDto);
+                    }
+                    return postDto;
+                })
+                .collect(Collectors.toList());
     }
 }

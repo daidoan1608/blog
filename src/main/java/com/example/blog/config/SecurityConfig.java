@@ -57,7 +57,8 @@ public class SecurityConfig {
                                 "/img/**",
                                 "/login",
                                 "/fonts/**",
-                                "/error").permitAll()
+                                "/error",
+                                "/posts/*").permitAll()
                         .requestMatchers(antMatcher("/admin/**")).hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )

@@ -1,6 +1,7 @@
 package com.example.blog.service.Impl;
 
 import com.example.blog.dto.UserDto;
+import com.example.blog.model.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -22,7 +23,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (userDto == null) {
             throw new UsernameNotFoundException("User not found");
         }
-        return new User(
+        return new CustomUserDetails(
+                userDto.getId(),
                 userDto.getUsername(),
                 userDto.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority(userDto.getRole().name()))

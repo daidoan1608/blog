@@ -1,7 +1,6 @@
 package com.example.blog.controller;
 
 import com.example.blog.dto.UserDto;
-import com.example.blog.model.User;
 import com.example.blog.service.Impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -78,7 +77,6 @@ public class AdminController {
     public String updateUser(@Valid @ModelAttribute UserDto userDto,
                              BindingResult bindingResult,
                              @RequestParam(value = "img", required = false) MultipartFile img) throws IOException {
-        // Lấy người dùng từ cơ sở dữ liệu theo ID
         UserDto existingUserDto = userServiceImpl.findById(userDto.getId());
         userDto.setPassword(existingUserDto.getPassword());
         // Kiểm tra lỗi trước khi thực hiện bất kỳ thao tác nào
@@ -86,21 +84,17 @@ public class AdminController {
             bindingResult.getAllErrors().forEach(error -> {
                 System.out.println(error.getDefaultMessage());
             });
-            return "update-form"; // Trở lại form nếu có lỗi
+            return "update-form";
         }
 
         String oldAvatarPath = existingUserDto.getAvatar();
 
-        // Kiểm tra nếu có file mới được upload
         if (img != null && !img.isEmpty()) {
-            // Xóa tệp avatar cũ
             deleteFile(oldAvatarPath);
 
-            // Cập nhật avatar mới
             String newAvatarPath = uploadAvatar(img, userDto.getUsername());
-            userDto.setAvatar(newAvatarPath); // Cập nhật đường dẫn avatar mới
+            userDto.setAvatar(newAvatarPath);
         } else {
-            // Nếu không có tệp mới, giữ nguyên đường dẫn cũ
             userDto.setAvatar(oldAvatarPath);
         }
 
@@ -115,7 +109,6 @@ public class AdminController {
         UserDto userDto = userServiceImpl.findById(id);
         String avatarPath = userDto.getAvatar();
 
-        // Kiểm tra nếu avatarPath không rỗng và xóa thư mục chứa ảnh
         if (avatarPath != null && !avatarPath.isEmpty()) {
             // Chuyển avatarPath thành đường dẫn thực trên hệ thống file
             Path folderPath = Paths.get(System.getProperty("user.dir"), "uploads", avatarPath).getParent();

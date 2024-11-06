@@ -3,6 +3,7 @@ package com.example.blog.service;
 import com.example.blog.dto.PostDto;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface PostService {
@@ -14,5 +15,7 @@ public interface PostService {
 
     List<PostDto> getAllPosts();
 
-    PostDto getPost(UUID id);
+    PostDto findById(UUID id);
+
+    List<PostDto> findAllByUserId(UUID userId);
 }

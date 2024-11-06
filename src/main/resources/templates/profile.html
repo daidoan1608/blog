@@ -25,6 +25,32 @@
     <div>
         <a th:href="@{/admin/users/update/{id}(id=${user.id})}" class="btn">Chỉnh sửa thông tin</a>
     </div>
+    <div>
+        <ul>
+            <li th:each="post : ${posts}">
+                <h2>
+                    <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề</a>
+                </h2>
+                <p><strong>Tác giả:</strong> <span th:text="${post.author.username}"></span></p>
+                <p><strong>Thời gian:</strong> <span th:text="${post.updatedAt}"></span></p>
+                <p th:text="${post.content}">Nội dung</p>
+                <hr>
+<!--                <div th:if="${user != null}">-->
+<!--                    <h4>Thêm bình luận mới</h4>-->
+<!--                    <form th:action="@{/comments/add}" method="post">-->
+<!--                        <input type="hidden" name="postId" th:value="${post.id}"/>-->
+<!--                        <div class="form-group">-->
+<!--                            <textarea class="form-control" name="body" rows="3" placeholder="Nhập bình luận của bạn" required></textarea>-->
+<!--                        </div>-->
+<!--                        <button type="submit" class="btn btn-primary">Đăng bình luận</button>-->
+<!--                    </form>-->
+<!--                </div>-->
+                <div th:if="${user == null}">
+                    <p>Vui lòng <a th:href="@{/login}">đăng nhập</a> để bình luận.</p>
+                </div>
+            </li>
+        </ul>
+    </div>
 </div>
 </body>
 </html>
