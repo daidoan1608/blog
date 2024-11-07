@@ -14,4 +14,5 @@ public class PostDto {
     private String content;
     private LocalDateTime updatedAt;
     private UserDto author;
+    private List<CommentDto> comments;
 }

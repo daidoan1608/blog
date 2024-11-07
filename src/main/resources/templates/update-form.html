@@ -3,56 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <title>Cập nhật thông tin người dùng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css}">
+    <style>
+        .container {
+            margin-top: 20px; /* Khoảng cách trên cùng của container */
+        }
+        .avatar-preview {
+            margin-bottom: 20px;
+        }
+         .home-link {
+             cursor: pointer; /* Hiển thị con trỏ chuột như một nút bấm */
+             text-align: center; /* Căn giữa nội dung */
+             padding: 20px; /* Thêm khoảng cách bên trong */
+             border: 1px solid #ccc; /* Đường viền xung quanh */
+             border-radius: 5px; /* Bo tròn các góc */
+             background-color: #f9f9f9; /* Màu nền nhẹ */
+             transition: background-color 0.3s; /* Hiệu ứng chuyển màu nền */
+         }
+    </style>
 </head>
 <body>
-<h1>Cập nhật thông tin người dùng</h1>
+<div class="container mt-5">
+    <div class="home-link" th:onclick="window.location.href='/'" th:if="${isUser}"> <!-- Chuyển hướng về trang chủ -->
+        <h1>Trang chủ</h1>
+    </div>
+    <p th:text="${role}">Role</p>
+    <h1>Cập nhật thông tin người dùng</h1>
 
-<form th:action="@{/admin/users/update/{id} (id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
-    <div>
-        <img id="avatarPreview" th:src="${user.avatar}" width="200" height="200" alt="Avatar Preview"/>
-    </div>
-    <div>
-        <label for="img">Đổi:</label>
-        <input type="file" id="img" name="img" onchange="previewAvatar(event)"/>
-    </div>
-    <div>
-        <label for="username">Tên đăng nhập:</label>
-        <input type="text" id="username" th:field="*{username}" required readonly />
-    </div>
-    <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" th:field="*{email}" required readonly />
-    </div>
-    <div>
-        <label for="fullname">Họ tên:</label>
-        <input type="text" id="fullname" th:field="*{fullname}" required />
-    </div>
-    <div>
-        <label for="phone">Điện thoại:</label>
-        <input type="text" id="phone" th:field="*{phone}" required />
-    </div>
-    <div>
-        <label for="role">Vai trò:</label>
-        <select id="role" th:field="*{role}">
-            <option value="USER" th:selected="${user.role == 'USER'}">User</option>
-            <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">Admin</option>
-        </select>
-    </div>
-    <div>
-        <input type="submit" value="Cập nhật"/>
-    </div>
-</form>
-<a href="/admin/users">Trở về danh sách</a>
+    <form th:action="@{/admin/users/update/{id}(id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
+        <div class="avatar-preview">
+            <img id="avatarPreview" th:src="${user.avatar}" width="200" height="200" alt="Avatar Preview"/>
+        </div>
+        <div class="form-group">
+            <label for="img">Đổi avatar:</label>
+            <input type="file" id="img" name="img" class="form-control-file" onchange="previewAvatar(event)"/>
+        </div>
+        <div class="form-group">
+            <label for="username">Tên đăng nhập:</label>
+            <input type="text" id="username" th:field="*{username}" class="form-control" required readonly />
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" th:field="*{email}" class="form-control" required readonly />
+        </div>
+        <div class="form-group">
+            <label for="fullname">Họ tên:</label>
+            <input type="text" id="fullname" th:field="*{fullname}" class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label for="phone">Điện thoại:</label>
+            <input type="text" id="phone" th:field="*{phone}" class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label for="role">Vai trò:</label>
+            <select id="role" th:field="*{role}" class="form-control">
+                <option value="USER" th:selected="${user.role == 'USER'}">User</option>
+                <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">Admin</option>
+            </select>
+        </div>
+        <div>
+            <input type="submit" value="Cập nhật" class="btn btn-primary"/>
+        </div>
+    </form>
 
-<script>
-    function previewAvatar(event) {
-        const reader = new FileReader();
-        reader.onload = function(){
-            const avatarPreview = document.getElementById('avatarPreview');
-            avatarPreview.src = reader.result;
+    <a href="/admin/users" class="btn btn-secondary mt-3"
+       th:unless="${isUser}">Trở về danh sách</a>
+    <script>
+        function previewAvatar(event) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const avatarPreview = document.getElementById('avatarPreview');
+                avatarPreview.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
         }
-        reader.readAsDataURL(event.target.files[0]);
-    }
-</script>
+    </script>
+</div>
+
 </body>
 </html>

@@ -7,11 +7,10 @@ import com.example.blog.service.Impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -35,4 +34,31 @@ public class CommentController {
         commentService.createComment(postId, comment);
         return "redirect:/";
     }
+
+    @PostMapping("/delete/{id}")
+    public String deleteComment(@PathVariable UUID id) {
+        log.info("Comment deleted");
+        commentService.deleteComment(id);
+        return "redirect:/";
+    }
+
+    @GetMapping("/update/{id}")
+    public String updateComment(@PathVariable UUID id,
+                                Model model) {
+        log.info("Load Comment updated view");
+        CommentDto comment = commentService.findById(id);
+        model.addAttribute("comment", comment);
+        return "update-comment";
+    }
+
+    @PostMapping("/update/{id}")
+    public String updateComment(@PathVariable UUID id,
+                                @RequestParam String body) {
+        log.info("Comment updated");
+        CommentDto comment = commentService.findById(id);
+        comment.setBody(body);
+        commentService.updateComment(comment);
+        return "redirect:/";
+    }
+
 }

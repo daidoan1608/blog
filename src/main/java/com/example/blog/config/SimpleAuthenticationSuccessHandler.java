@@ -14,9 +14,7 @@ import java.util.Collection;
 
 @Component
 public class SimpleAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {

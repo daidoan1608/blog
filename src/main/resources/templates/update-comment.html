@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sửa Bình Luận</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css}">
+    <style>
+        .home-link {
+            cursor: pointer; /* Hiển thị con trỏ chuột như một nút bấm */
+            text-align: center; /* Căn giữa nội dung */
+            padding: 20px; /* Thêm khoảng cách bên trong */
+            border: 1px solid #ccc; /* Đường viền xung quanh */
+            border-radius: 5px; /* Bo tròn các góc */
+            background-color: #f9f9f9; /* Màu nền nhẹ */
+            transition: background-color 0.3s; /* Hiệu ứng chuyển màu nền */
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="home-link" th:onclick="window.location.href='/'"> <!-- Chuyển hướng về trang chủ -->
+        <h1>Trang chủ</h1>
+    </div>
+    <h1>Sửa Bình Luận</h1>
+
+    <form th:action="@{/comments/update/{id}(id=${comment.id})}" method="post" th:object="${comment}">
+        <div class="form-group">
+            <label for="body">Nội dung bình luận:</label>
+            <textarea id="body" th:field="${comment.body}" class="form-control" rows="5" required></textarea>
+            <span th:if="${#fields.hasErrors('body')}" th:errors="${comment.body}" class="text-danger">Nội dung không hợp lệ</span>
+        </div>
+
+        <div>
+            <input type="submit" value="Cập nhật" class="btn btn-primary"/>
+        </div>
+    </form>
+
+    <a th:href="@{/posts/{postId}(postId=${comment.post.id})}" class="btn btn-secondary mt-3">Trở về bài viết</a>
+</div>
+
+</body>
+</html>

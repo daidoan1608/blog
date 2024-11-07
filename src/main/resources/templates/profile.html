@@ -4,53 +4,92 @@
     <title>Thông tin cá nhân</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css}">
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+        .avatar {
+            margin-bottom: 20px;
+        }
+        .user-info {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .post-list {
+            margin-top: 20px;
+        }
+        .post-item {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+         .home-link {
+             cursor: pointer; /* Hiển thị con trỏ chuột như một nút bấm */
+             text-align: center; /* Căn giữa nội dung */
+             padding: 20px; /* Thêm khoảng cách bên trong */
+             border: 1px solid #ccc; /* Đường viền xung quanh */
+             border-radius: 5px; /* Bo tròn các góc */
+             background-color: #f9f9f9; /* Màu nền nhẹ */
+             transition: background-color 0.3s; /* Hiệu ứng chuyển màu nền */
+         }
+    </style>
 </head>
 <body>
-<div class="container">
+<div class="container mt-5">
+    <div class="home-link" th:onclick="window.location.href='/'"> <!-- Chuyển hướng về trang chủ -->
+        <h1>Trang chủ</h1>
+    </div>
     <h1>Thông tin cá nhân</h1>
 
     <!-- Hiển thị avatar nếu có -->
-    <div>
+    <div class="avatar">
         <img th:if="${path != null}" th:src="${path}" alt="Avatar" width="150" height="150">
-
     </div>
 
-    <p><strong>Tên đăng nhập:</strong> <span th:text="${user.username}"></span></p>
-    <p><strong>Họ và tên:</strong> <span th:text="${user.fullname}"></span></p>
-    <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
-    <p><strong>Số điện thoại:</strong> <span th:text="${user.phone}"></span></p>
-    <p><strong>Vai trò:</strong> <span th:text="${user.role}"></span></p>
-
-    <!-- Đặt thêm các nút hoặc liên kết nếu cần -->
-    <div>
-        <a th:href="@{/admin/users/update/{id}(id=${user.id})}" class="btn">Chỉnh sửa thông tin</a>
+    <div class="user-info">
+        <p><strong>Tên đăng nhập:</strong> <span th:text="${user.username}"></span></p>
+        <p><strong>Họ và tên:</strong> <span th:text="${user.fullname}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+        <p><strong>Số điện thoại:</strong> <span th:text="${user.phone}"></span></p>
+        <p><strong>Vai trò:</strong> <span th:text="${user.role}"></span></p>
+        <div class="actions">
+            <form th:action="@{/admin/users/update/{id}(id=${user.id})}" method="get">
+                <button type="submit" class="btn btn-warning">Sửa</button>
+            </form>
+        </div>
     </div>
-    <div>
+
+
+    <!-- Danh sách bài viết của người dùng -->
+    <div class="post-list">
+        <h2>Bài viết của bạn</h2>
         <ul>
-            <li th:each="post : ${posts}">
-                <h2>
+            <li th:each="post : ${posts}" class="post-item">
+                <h3>
                     <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề</a>
-                </h2>
+                </h3>
+                <div th:if="${user != null}">
+                    <!-- Nút chỉnh sửa -->
+                    <a th:href="@{/posts/update/{id}(id=${post.id})}" class="btn btn-warning">Chỉnh sửa</a>
+
+                    <!-- Nút xóa -->
+                    <form th:action="@{/posts/delete/{id}(id=${post.id})}" method="post" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE"/>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?');">Xóa</button>
+                    </form>
+                </div>
                 <p><strong>Tác giả:</strong> <span th:text="${post.author.username}"></span></p>
                 <p><strong>Thời gian:</strong> <span th:text="${post.updatedAt}"></span></p>
                 <p th:text="${post.content}">Nội dung</p>
                 <hr>
-<!--                <div th:if="${user != null}">-->
-<!--                    <h4>Thêm bình luận mới</h4>-->
-<!--                    <form th:action="@{/comments/add}" method="post">-->
-<!--                        <input type="hidden" name="postId" th:value="${post.id}"/>-->
-<!--                        <div class="form-group">-->
-<!--                            <textarea class="form-control" name="body" rows="3" placeholder="Nhập bình luận của bạn" required></textarea>-->
-<!--                        </div>-->
-<!--                        <button type="submit" class="btn btn-primary">Đăng bình luận</button>-->
-<!--                    </form>-->
-<!--                </div>-->
-                <div th:if="${user == null}">
-                    <p>Vui lòng <a th:href="@{/login}">đăng nhập</a> để bình luận.</p>
-                </div>
             </li>
         </ul>
     </div>
 </div>
+
 </body>
 </html>

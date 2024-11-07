@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.UUID;
@@ -54,7 +55,7 @@ public class PostController {
         return "post";
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("delete/{id}")
     public String deletePost(@AuthenticationPrincipal CustomUserDetails userDetails,
                              @PathVariable UUID id) {
         PostDto post = postService.findById(id);
@@ -63,16 +64,33 @@ public class PostController {
             log.warn("Bài viết không tồn tại");
             return "redirect:/";
         }
-        if (post.getAuthor().getId().equals(userDetails.getId())) {
+        if (!post.getAuthor().getId().equals(userDetails.getId()) &&
+                !userDetails.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals("ADMIN"))) {
             log.warn("Bạn không có quyền xóa bài viết này");
+            return "redirect:/";
         }
-
         postService.deletePost(id);
         log.info("Xóa bài viết thành công");
         return "redirect:/";
     }
 
-    @PutMapping("/{id}")
+    @GetMapping("update/{id}")
+    public String showUpdateForm(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                 @PathVariable UUID id,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
+        PostDto post = postService.findById(id);
+        if (!post.getAuthor().getId().equals(userDetails.getId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền sửa bài viết này");
+            log.warn("Bạn không có sửa bài viết này");
+            return "redirect:/";
+        }
+        model.addAttribute("post", post);
+        return "update-post";
+    }
+
+    @PostMapping("update/{id}")
     public String updatePost(@AuthenticationPrincipal CustomUserDetails userDetails,
                              @PathVariable UUID id,
                              @RequestParam String title,
@@ -82,8 +100,9 @@ public class PostController {
             log.warn("Bài viết không tồn tại");
             return "redirect:/";
         }
-        if (post.getAuthor().getId().equals(userDetails.getId())) {
+        if (!post.getAuthor().getId().equals(userDetails.getId())) {
             log.warn("Bạn không có sửa bài viết này");
+            return "redirect:/";
         }
         post.setTitle(title);
         post.setContent(content);

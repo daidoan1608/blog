@@ -78,8 +78,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDto> findAllByUserId(UUID userId) {
-        List<Post> posts = postRepository.findAllByUserId(userId);
-        return posts.stream()
+        return postRepository.findAllByUserId(userId).stream()
                 .map(post -> {
                     PostDto postDto = postMapper.map(post, PostDto.class);
                     if (post.getUser() != null) {

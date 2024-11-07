@@ -1,10 +1,14 @@
 package com.example.blog.controller;
 
+import com.example.blog.config.HandleFile;
 import com.example.blog.dto.UserDto;
+import com.example.blog.model.User;
 import com.example.blog.service.Impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.validation.BindingResult;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,8 +27,8 @@ import java.util.UUID;
 @SessionAttributes("user")
 @RequestMapping("/admin")
 public class AdminController {
-
     private final UserServiceImpl userServiceImpl;
+    private final HandleFile handleFile;
 
     @GetMapping("/users")
     public String listUsers(Model model) {
@@ -58,7 +59,7 @@ public class AdminController {
         }
 
         // Lưu tệp avatar và lấy đường dẫn
-        String avatarPath = uploadAvatar(img, userDto.getUsername());
+        String avatarPath = handleFile.uploadAvatar(img, userDto.getUsername());
         userDto.setAvatar(avatarPath); // Cập nhật đường dẫn vào UserDto
 
         // Lưu người dùng
@@ -67,9 +68,17 @@ public class AdminController {
         return "redirect:/admin/users";
     }
     @GetMapping("/users/update/{id}")
-    public String showFormUpdate(@PathVariable UUID id, Model model) {
+    public String showFormUpdate(@AuthenticationPrincipal UserDetails userDetails,
+                                 @PathVariable UUID id,
+                                 Model model) {
+        boolean isUser = false;
+        User.Role role = User.Role.valueOf(userDetails.getAuthorities().toArray()[0].toString());
+        if (!role.equals(User.Role.ADMIN)) {
+            isUser = true;
+        }
         UserDto userDto = userServiceImpl.findById(id);
         model.addAttribute("user", userDto);
+        model.addAttribute("isUser", isUser);
         return "update-form";
     }
 
@@ -82,7 +91,7 @@ public class AdminController {
         // Kiểm tra lỗi trước khi thực hiện bất kỳ thao tác nào
         if (bindingResult.hasErrors()) {
             bindingResult.getAllErrors().forEach(error -> {
-                System.out.println(error.getDefaultMessage());
+                log.error(error.getDefaultMessage());
             });
             return "update-form";
         }
@@ -90,9 +99,9 @@ public class AdminController {
         String oldAvatarPath = existingUserDto.getAvatar();
 
         if (img != null && !img.isEmpty()) {
-            deleteFile(oldAvatarPath);
+            handleFile.deleteFile(oldAvatarPath);
 
-            String newAvatarPath = uploadAvatar(img, userDto.getUsername());
+            String newAvatarPath = handleFile.uploadAvatar(img, userDto.getUsername());
             userDto.setAvatar(newAvatarPath);
         } else {
             userDto.setAvatar(oldAvatarPath);
@@ -103,51 +112,15 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
-
     @PostMapping("/users/delete/{id}")
     public String deleteUser(@PathVariable UUID id) throws IOException {
         UserDto userDto = userServiceImpl.findById(id);
         String avatarPath = userDto.getAvatar();
-
         if (avatarPath != null && !avatarPath.isEmpty()) {
-            // Chuyển avatarPath thành đường dẫn thực trên hệ thống file
             Path folderPath = Paths.get(System.getProperty("user.dir"), "uploads", avatarPath).getParent();
-            deleteFile(avatarPath);
+            handleFile.deleteFile(avatarPath);
         }
         userServiceImpl.deleteById(id);
         return "redirect:/admin/users";
-    }
-
-    public String uploadAvatar(MultipartFile avatar, String username) throws IOException {
-        // Đường dẫn đến thư mục img trong resources/static
-        Path staticPath = Paths.get("uploads", "avatars", username);
-        // Kiểm tra xem thư mục đã tồn tại chưa, nếu chưa thì tạo mới
-        if (!Files.exists(staticPath)) {
-            Files.createDirectories(staticPath);
-        }
-        // Tạo đường dẫn cho tệp ảnh
-        Path file = staticPath.resolve(avatar.getOriginalFilename().replaceAll(" ", "_"));
-        // Lưu tệp ảnh vào thư mục
-        try (OutputStream os = Files.newOutputStream(file)) {
-            os.write(avatar.getBytes());
-        }
-        // Trả về đường dẫn tương đối để lưu vào database
-        return "/avatars/" + username + "/" + avatar.getOriginalFilename().replaceAll(" ", "_");
-    }
-
-    public void deleteFile(String path) throws IOException {
-        Path folderPath = Paths.get(System.getProperty("user.dir"), "uploads", path).getParent();
-        if (Files.exists(folderPath)) {
-            Files.walk(folderPath).sorted(Comparator.reverseOrder())
-                    .forEach(filePath -> {
-                        try {
-                            System.out.println("Đang xóa: " + filePath);
-                            Files.delete(filePath);
-                        } catch (IOException e) {
-                            log.info("Không thể xóa file: " + filePath);
-                            e.printStackTrace();
-                        }
-                    });
-        }
     }
 }

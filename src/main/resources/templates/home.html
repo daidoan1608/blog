@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Trang blog</title>
+    <link rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css}">
     <style>
         /* Định vị container chứa nút ở góc phải trên cùng */
         .top-right-buttons {
@@ -17,70 +18,156 @@
             padding: 8px 12px;
             font-size: 14px;
         }
+
+        /* Định dạng cho form */
+        .post-form {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        /* Định dạng cho các nút trong form */
+        .post-form button {
+            margin-top: 10px;
+        }
+
+        /* Định dạng cho danh sách bài viết */
+        .post-list {
+            margin-top: 20px;
+        }
+
+        /* Định dạng cho từng bài viết */
+        .post-item {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        .home-link {
+            cursor: pointer; /* Hiển thị con trỏ chuột như một nút bấm */
+            text-align: center; /* Căn giữa nội dung */
+            padding: 20px; /* Thêm khoảng cách bên trong */
+            border: 1px solid #ccc; /* Đường viền xung quanh */
+            border-radius: 5px; /* Bo tròn các góc */
+            background-color: #f9f9f9; /* Màu nền nhẹ */
+            transition: background-color 0.3s; /* Hiệu ứng chuyển màu nền */
+        }
+
+        .post-item h2 {
+            margin-bottom: 10px;
+        }
+
+        .comments {
+            width: 80%; /* Chiếm 2/3 chiều rộng */
+            margin: 20px auto; /* Khoảng cách trên cùng */
+        }
     </style>
 </head>
 <body>
-<h1>Trang chủ</h1>
+<div class="container mt-5">
+    <div class="home-link" th:onclick="window.location.href='/'"> <!-- Chuyển hướng về trang chủ -->
+        <h1>Trang chủ</h1>
+    </div>
+    <p>
+        Chào mừng <span th:if="${user != null}" th:text="${user.username}"></span> đến với trang blog của chúng tôi!
+    </p>
 
-<p>Chào mừng <span th:if="${user != null}" th:text="${user.username}"></span></p>
-<p>đến với trang blog của chúng tôi!</p>
-<div th:if="${user} != null">
-    <form th:action="@{/posts/create}" method="post">
-        <div>
-            <label for="title">Tiêu đề:</label>
-            <input type="text" id="title" name="title" placeholder="Nhập tiêu đề" required>
-        </div>
+    <div th:if="${user} != null" class="post-form">
+        <form th:action="@{/posts/create}" method="post">
+            <div class="form-group">
+                <label for="title">Tiêu đề:</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="Nhập tiêu đề" required>
+            </div>
 
-        <div>
-            <label for="content">Nội dung:</label>
-            <textarea id="content" name="content" placeholder="Nhập nội dung" required></textarea>
-        </div>
-        <button type="submit">Đăng bài</button>
-    </form>
-</div>
-<!-- Container chứa các nút -->
-<div class="top-right-buttons" th:if="${user} != null">
-    <!-- Nút Xem Thông Tin Cá Nhân -->
-    <a th:href="@{'/profile/' + ${user.getId()}}">
-        <button>Xem Thông Tin Cá Nhân</button>
-    </a>
-    <!-- Nút Đăng Xuất -->
-    <a href="/logout" th:href="@{/logout}">
-        <button>Đăng Xuất</button>
-    </a>
-</div>
+            <div class="form-group">
+                <label for="content">Nội dung:</label>
+                <textarea id="content" name="content" class="form-control" placeholder="Nhập nội dung"
+                          required></textarea>
+            </div>
 
-<!-- Thông điệp cho người dùng chưa đăng nhập -->
-<div th:if="${user} == null">
-    <p>Bạn chưa đăng nhập! Vui lòng <a th:href="@{/login}">đăng nhập</a>.</p>
-</div>
+            <button type="submit" class="btn btn-primary">Đăng bài</button>
+        </form>
+    </div>
 
-<div>
-    <ul>
-        <li th:each="post : ${posts}">
-            <h2>
-                <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề</a>
-            </h2>
-            <p><strong>Tác giả:</strong> <span th:text="${post.author.username}"></span></p>
-            <p><strong>Thời gian:</strong> <span th:text="${post.updatedAt}"></span></p>
-            <p th:text="${post.content}">Nội dung</p>
-            <hr>
-            <div th:if="${user != null}">
-                <h4>Thêm bình luận mới</h4>
-                <form th:action="@{/comments/add}" method="post">
-                    <input type="hidden" name="postId" th:value="${post.id}"/>
-                    <div class="form-group">
-                        <textarea class="form-control" name="body" rows="3" placeholder="Nhập bình luận của bạn" required></textarea>
+    <!-- Container chứa các nút -->
+    <div class="top-right-buttons" th:if="${user} != null">
+        <!-- Nút Xem Thông Tin Cá Nhân -->
+        <a th:href="@{'/profile/' + ${user.getId()}}">
+            <button class="btn btn-info">Xem Thông Tin Cá Nhân</button>
+        </a>
+        <!-- Nút Đăng Xuất -->
+        <a href="/logout" th:href="@{/logout}">
+            <button class="btn btn-danger">Đăng Xuất</button>
+        </a>
+    </div>
+
+    <!-- Thông điệp cho người dùng chưa đăng nhập -->
+    <div th:if="${user} == null">
+        <p>Bạn chưa đăng nhập! Vui lòng <a th:href="@{/login}">đăng nhập</a>.</p>
+    </div>
+
+    <div class="post-list">
+        <ul>
+            <li th:each="post : ${posts}" class="post-item">
+                <h2>
+                    <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề</a>
+                </h2>
+
+                <div th:if="${user != null}">
+                    <!-- Nút chỉnh sửa -->
+                    <a th:href="@{/posts/update/{id}(id=${post.id})}" class="btn btn-warning">Chỉnh sửa</a>
+
+                    <!-- Nút xóa -->
+                    <form th:action="@{/posts/delete/{id}(id=${post.id})}" method="post" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE"/>
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?');">Xóa
+                        </button>
+                    </form>
+                </div>
+
+                <p><strong>Tác giả:</strong> <span th:text="${post.author.username}"></span></p>
+                <p><strong>Thời gian:</strong> <span th:text="${post.updatedAt}"></span></p>
+                <p th:text="${post.content}">Nội dung</p>
+                <hr>
+
+                <div class="comments">
+                    <h3>Bình luận</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item" th:each="comment : ${post.comments}">
+                            <p><strong><span th:text="${comment.user.username}">Tên người dùng</span></strong>
+                                <span th:text="${comment.updatedAt}">Thời gian bình luận</span></p>
+                            <div th:if="${user != null}">
+                                <!-- Nút chỉnh sửa -->
+                                <a th:href="@{/comments/update/{id}(id=${comment.id})}" class="btn btn-warning">Chỉnh sửa</a>
+
+                                <!-- Nút xóa -->
+                                <form th:action="@{/comments/delete/{id}(id=${comment.id})}" method="post" style="display:inline;">
+                                    <input type="hidden" name="_method" value="DELETE"/>
+                                    <button type="submit" class="btn btn-danger"
+                                            onclick="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?');">Xóa
+                                    </button>
+                                </form>
+                            </div>
+                            <p th:text="${comment.body}">Nội dung bình luận</p>
+                        </li>
+                    </ul>
+                    <div th:if="${user != null}">
+                        <h4>Thêm bình luận mới</h4>
+                        <form th:action="@{/comments/add}" method="post">
+                            <input type="hidden" name="postId" th:value="${post.id}"/>
+                            <div class="form-group">
+                        <textarea class="form-control" name="body" rows="3" placeholder="Nhập bình luận của bạn"
+                                  required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Đăng bình luận</button>
+                        </form>
                     </div>
-                    <button type="submit" class="btn btn-primary">Đăng bình luận</button>
-                </form>
-            </div>
-            <div th:if="${user == null}">
-                <p>Vui lòng <a th:href="@{/login}">đăng nhập</a> để bình luận.</p>
-            </div>
-        </li>
-    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
 </div>
-
 </body>
 </html>

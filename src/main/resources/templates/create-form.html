@@ -3,71 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <title>Thêm Người Dùng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css}">
+    <style>
+        .container {
+            margin-top: 20px; /* Khoảng cách trên cùng của container */
+        }
+        .avatar-preview {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-<h1>Thêm Người Dùng</h1>
+<div class="container">
+    <h1>Thêm Người Dùng</h1>
+    <form th:action="@{/admin/users/new}" method="post" enctype="multipart/form-data" th:object="${userDto}">
+        <div class="avatar-preview">
+            <img id="avatarPreview" src="#" alt="Avatar Preview" width="200" height="200" style="display:none;" />
+        </div>
+        <div class="form-group">
+            <label for="avatar">Avatar:</label>
+            <input type="file" name="img" id="avatar" class="form-control-file" onchange="previewAvatar(event)" />
+        </div>
+        <div class="form-group">
+            <label for="username">Tên đăng nhập:</label>
+            <input type="text" id="username" name="username" th:field="*{username}" class="form-control" required />
+            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger">Tên đăng nhập không hợp lệ</span>
+        </div>
 
-<form th:action="@{/admin/users/new}" method="post" enctype="multipart/form-data" th:object="${userDto}">
-    <div>
-        <img id="avatarPreview" src="#" alt="Avatar Preview" width="200" height="200" style="display:none;" />
-    </div>
-    <div>
-        <label for="avatar">Avatar:</label>
-        <input type="file" name="img" id="avatar" onchange="previewAvatar(event)" />
-    </div>
-    <div>
-        <label for="username">Tên đăng nhập:</label>
-        <input type="text" id="username" name="username" th:field="*{username}" required />
-        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Tên đăng nhập không hợp lệ</span>
-    </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" th:field="*{email}" class="form-control" required />
+            <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger">Email không hợp lệ</span>
+        </div>
 
-    <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" th:field="*{email}" required />
-        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email không hợp lệ</span>
-    </div>
+        <div class="form-group">
+            <label for="fullname">Họ tên:</label>
+            <input type="text" id="fullname" name="fullname" th:field="*{fullname}" class="form-control" required />
+            <span th:if="${#fields.hasErrors('fullname')}" th:errors="*{fullname}" class="text-danger">Họ tên không hợp lệ</span>
+        </div>
 
-    <div>
-        <label for="fullname">Họ tên:</label>
-        <input type="text" id="fullname" name="fullname" th:field="*{fullname}" required />
-        <span th:if="${#fields.hasErrors('fullname')}" th:errors="*{fullname}">Họ tên không hợp lệ</span>
-    </div>
+        <div class="form-group">
+            <label for="phone">Điện thoại:</label>
+            <input type="text" id="phone" name="phone" th:field="*{phone}" class="form-control" required />
+            <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-danger">Số điện thoại không hợp lệ</span>
+        </div>
 
-    <div>
-        <label for="phone">Điện thoại:</label>
-        <input type="text" id="phone" name="phone" th:field="*{phone}" required />
-        <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Số điện thoại không hợp lệ</span>
-    </div>
+        <div class="form-group">
+            <label for="password">Mật khẩu:</label>
+            <input type="password" id="password" name="password" th:field="*{password}" class="form-control" required />
+            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger">Mật khẩu không hợp lệ</span>
+        </div>
 
-    <div>
-        <label for="password">Mật khẩu:</label>
-        <input type="password" id="password" name="password" th:field="*{password}" required />
-        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Mật khẩu không hợp lệ</span>
-    </div>
+        <div class="form-group">
+            <label for="role">Vai trò:</label>
+            <select id="role" name="role" th:field="*{role}" class="form-control">
+                <option value="">Chọn vai trò</option> <!-- Tùy chọn mặc định -->
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+            </select>
+        </div>
 
-    <div>
-        <label for="role">Vai trò:</label>
-        <select id="role" name="role" th:field="*{role}">
-            <option value="USER">User</option>
-            <option value="ADMIN">Admin</option>
-        </select>
-    </div>
-    <div>
-        <input type="submit" value="Lưu" />
-    </div>
-</form>
-<a th:href="@{/admin/users}">Trở về danh sách</a>
-<!-- JavaScript để hiển thị ảnh xem trước -->
-<script>
-    function previewAvatar(event) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            const avatarPreview = document.getElementById('avatarPreview');
-            avatarPreview.src = reader.result;
-            avatarPreview.style.display = "block"; // Hiển thị ảnh sau khi chọn
+        <div>
+            <input type="submit" value="Lưu" class="btn btn-primary"/>
+        </div>
+    </form>
+
+    <a th:href="@{/admin/users}" class="btn btn-secondary mt-3">Trở về danh sách</a>
+
+    <!-- JavaScript để hiển thị ảnh xem trước -->
+    <script>
+        function previewAvatar(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const avatarPreview = document.getElementById('avatarPreview');
+                avatarPreview.src = reader.result;
+                avatarPreview.style.display = "block"; // Hiển thị ảnh sau khi chọn
+            }
+            reader.readAsDataURL(event.target.files[0]);
         }
-        reader.readAsDataURL(event.target.files[0]);
-    }
-</script>
+    </script>
+</div>
+
 </body>
 </html>
